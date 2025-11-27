@@ -28,7 +28,7 @@ DIST_SCALE = 3.0
 rotacao_planetas = [0.0 for _ in range(len(PLANETAS))]
 angulos = [0.0 for _ in range(len(PLANETAS))]
 angulo_lua = 0.0
-velocidade_tempo = 0.2
+velocidade_tempo = 0.08
 pausado = False
 foco_camera = None 
 
@@ -168,6 +168,8 @@ def display():
     glLoadIdentity()
 
     desenhar_hud_nave()
+    
+    glColor3f(1.0, 1.0, 1.0)
     
     glPushMatrix()
     glPushMatrix()
