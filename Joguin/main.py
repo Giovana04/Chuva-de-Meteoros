@@ -49,7 +49,6 @@ def desenhar_texto(x, y, texto, tamanho=GLUT_BITMAP_HELVETICA_18):
     glEnable(GL_LIGHTING)
     glEnable(GL_DEPTH_TEST)
 
-
 def desenhar_texto_centralizado(y, texto, fonte, cor):
     largura_texto = 0
     for char in texto:
@@ -135,19 +134,50 @@ def display():
         desenhar_texto_centralizado(y_base - 165, "Modo Livre", FONTE_TEXTO, (1.0, 1.0, 1.0))
 
     elif estado_atual == REGRAS:
-        desenhar_texto_centralizado(ALTURA - 100, "Controles", FONTE_TITULO, (1.0, 0.5, 0.0)) # Laranja
-        desenhar_linha(ALTURA - 120)
+        y_cursor = ALTURA - 100 
         
-        margem_esq = LARGURA/2 - 250
+        desenhar_texto_centralizado(y_cursor, "Controles", FONTE_TITULO, (1.0, 0.5, 0.0)) # Laranja
+        desenhar_linha(y_cursor - 20)
         
-        # Lista de regras
-        glColor3f(0.9, 0.9, 0.9)
-        glRasterPos2f(margem_esq, ALTURA - 180); 
-        for c in "- Use [W, A, S, D] para pilotar e desviar.": glutBitmapCharacter(FONTE_TEXTO, ord(c)) 
+        margem_esq = LARGURA/2 - 300 
+        y_cursor -= 60 
         
-        #colocar o resto
+        textos_controles = [
+            "- Use [W, A, S, D] para pilotar e desviar no modo jogo.",
+            "- Apenas mover o mouse já moverá a câmera no modo jogo.",
+            "- No modo exploração é necessário clicar e segurar para mover.",
+            "- No modo exploração é possível dar zoom com o scroll.",
+            "- No modo exploração use [- / +] para a velocidade."
+        ]
+
+        glColor3f(0.9, 0.9, 0.9) 
         
-        desenhar_texto_centralizado(100, "Pressione ESC para voltar", FONTE_TEXTO, (1.0, 1.0, 0.0))
+        for frase in textos_controles:
+            glRasterPos2f(margem_esq, y_cursor) 
+            for c in frase:
+                glutBitmapCharacter(FONTE_TEXTO, ord(c)) 
+            y_cursor -= 30
+
+        y_cursor -= 40
+        
+        desenhar_texto_centralizado(y_cursor, "Regras do Jogo", FONTE_TITULO, (1.0, 0.5, 0.0)) 
+        desenhar_linha(y_cursor - 20)
+        
+        y_cursor -= 60 
+        
+        textos_regras = [
+            "- Desvie dos meteoros! Se for atingido, voltará a primeira fase.",
+            "- Termine 3 voltas no planeta para passar de fase."
+        ]
+        glColor3f(0.9, 0.9, 0.9) 
+        
+        for frase in textos_regras:
+            glRasterPos2f(margem_esq, y_cursor)
+            for c in frase:
+                glutBitmapCharacter(FONTE_TEXTO, ord(c))
+            y_cursor -= 30
+
+        desenhar_texto_centralizado(50, "Pressione ESC para voltar", FONTE_TEXTO, (1.0, 1.0, 0.0)) 
 
     elif estado_atual == JOGO:
         desenhar_caixa()
@@ -163,7 +193,7 @@ def display():
         for c in planeta: glutBitmapCharacter(FONTE_TITULO, ord(c))
         
         # Controles (Direita)
-        msg = ":ESC: Menu  |  +/- : Velocidade"
+        msg = "ESC: Menu  |  Mova o mouse: Câmera  |  +/- : Velocidade do tempo | Escolher fase: 1 - 8"
         largura = 0
         for c in msg: largura += glutBitmapWidth(FONTE_TEXTO, ord(c))
         
@@ -178,7 +208,7 @@ def display():
         glRasterPos2f(30, 40)
         for c in "MODO LIVRE": glutBitmapCharacter(FONTE_TITULO, ord(c))
         
-        msg = "Clique+Arraste: Girar | Scroll: Zoom | ESC: Volta"
+        msg = "Clique+Arraste: Girar | Scroll: Zoom | ESC: Volta | +/- : Velocidade do giro"
         largura = 0
         for c in msg: largura += glutBitmapWidth(FONTE_TEXTO, ord(c))
         glColor3f(0.7, 0.7, 0.7)
