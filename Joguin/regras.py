@@ -1,5 +1,6 @@
 # from main import *
 import random
+
 quantidadeCometas = 1
 def aleatorizar(meteoros, qntd):
     for i in range(0,len(meteoros)):

@@ -53,7 +53,8 @@ class SistemaSolar:
         self.meteoros = [0,0,0,0,0]
         self.meteorosObjetos = []
         for i in range (0,len(self.meteoros)):
-            self.meteorosObjetos.append(objeto(-4,0+i*0.6,0,0.2648,0.2648,0,-1,-0.2648,0))
+            # Onde tem aquele -1 perdido no tamMin X
+            self.meteorosObjetos.append(objeto(-4,0+i*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
         self.meteoroInicializado = False
         self.qntd = 1
         
@@ -253,7 +254,6 @@ class SistemaSolar:
         glPopMatrix()
     
     
-
     def atualizar(self):
         vel = 0.05
         for i, p in enumerate(self.PLANETAS):
@@ -263,7 +263,8 @@ class SistemaSolar:
         for i in range(0, len(self.meteoros)):
             if(self.meteoros[i] == True):
                 self.meteorosObjetos[i].posicao[0] += vel
-                self.colisao = regras.checarColisaoNave(self.meteorosObjetos[i], objeto(self.nave_y, self.nave_x, 0,0.3,0.3,0.3,-0.3,-0.3,-0.3))  
+                # Troquei e diminui o tamanho
+                self.colisao = regras.checarColisaoNave(self.meteorosObjetos[i], objeto(self.nave_x, self.nave_y, 0, 0.15, 0.15, 0.15, -0.15, -0.15, -0.15))
                 if(self.meteorosObjetos[i].posicao[0] >= 1.8):
                     while(len(self.meteorosObjetos) > 0 ):
                         self.meteorosObjetos.pop()
@@ -273,10 +274,13 @@ class SistemaSolar:
                 if(self.colisao):
                     self.meteoroInicializado = False
                     break
+                
     def getColisao(self):
         return self.colisao
+    
     def inverteColisao(self):
         self.colisao = False
+        
     def quantidadeCometas(self, qntd):
         self.qntd = int(qntd) 
         
@@ -308,7 +312,7 @@ class SistemaSolar:
         glPopMatrix()
         glTranslate(0.05,0.2,0)
         glRotate(-15,0,0,1)
-        glBegin(GL_TRIANGLE_FAN);
+        glBegin(GL_TRIANGLE_FAN)
         glColor3f(1,1,0); glVertex3f( 0.0, val3, 0.0);   
         glColor3f(1,0,0); glVertex3f(-val2,-val1, val1);  
         glColor3f(1,0,0); glVertex3f( val2,-val1, val2);   
@@ -318,7 +322,7 @@ class SistemaSolar:
         glEnd()
         glTranslate(-0.1,0,0)
         glRotatef(5,0,0,1)
-        glBegin(GL_TRIANGLE_FAN);
+        glBegin(GL_TRIANGLE_FAN)
         glColor3f(1,0.6,0); glVertex3f( 0.0, val4, 0.0);   
         glColor3f(1,0,0); glVertex3f(-val1,-val1, val1);  
         glColor3f(1,0,0); glVertex3f( val1,-val1, val1);   
@@ -329,7 +333,7 @@ class SistemaSolar:
         glEnd()
         glTranslate(-0.05,0,0)
         glRotatef(5,0,0,1)
-        glBegin(GL_TRIANGLE_FAN);
+        glBegin(GL_TRIANGLE_FAN)
         glColor3f(1,0.6,0); glVertex3f( 0.0, val2, 0.0);   
         glColor3f(1,0,0); glVertex3f(-val1,-val1, val1);  
         glColor3f(1,0,0); glVertex3f( val1,-val1, val1);   
