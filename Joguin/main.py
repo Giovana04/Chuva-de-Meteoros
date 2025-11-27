@@ -4,7 +4,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from objetos import *
-from regras import *
+# from regras import *
 
 MENU = 0
 REGRAS = 1
@@ -88,6 +88,7 @@ def desenhar_caixa(): # apanhei nessa ta kkkkkkk
 
 
 def display():
+    global estado_atual
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     
     sistema.desenhar_cenario()
@@ -181,7 +182,9 @@ def display():
 
     elif estado_atual == JOGO:
         desenhar_caixa()
-        
+        if(not sistema.verificaInicializado()):
+            sistema.inicializarMeteoros()
+       
         # Info do Planeta (Esquerda)
         planeta = sistema.PLANETAS[sistema.foco_camera][0].replace('.jpg','').replace('.png','').upper()
         glColor3f(0.0, 1.0, 1.0) # Título Ciano
@@ -191,7 +194,6 @@ def display():
         glColor3f(1.0, 1.0, 1.0) # Nome Branco
         glRasterPos2f(30, 25)
         for c in planeta: glutBitmapCharacter(FONTE_TITULO, ord(c))
-        
         # Controles (Direita)
         msg = "ESC: Menu  |  Mova o mouse: Câmera  |  +/- : Velocidade do tempo | Escolher fase: 1 - 8"
         largura = 0
@@ -200,6 +202,15 @@ def display():
         glColor3f(0.7, 0.7, 0.7)
         glRasterPos2f(LARGURA - largura - 30, 35)
         for c in msg: glutBitmapCharacter(FONTE_TEXTO, ord(c))
+        
+        if(sistema.getColisao()):
+            print("AQUI???????????????")
+            estado_atual = MENU
+            sistema.foco_camera = None 
+            sistema.zoom = -60
+            sistema.cam_pitch = 20
+            sistema.cam_yaw = 0
+            sistema.inverteColisao()
 
     elif estado_atual == EXPLORAR:
         desenhar_caixa()
@@ -259,7 +270,6 @@ def main():
 def teclado(key, x, y):
     global estado_atual
     k = key.decode('utf-8').lower()
-    
     # Controles que funcionam sempre
     if k == '\x1b': # ESC
         if estado_atual == MENU:
