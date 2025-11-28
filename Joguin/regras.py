@@ -1,20 +1,31 @@
-# from main import *
 import random
 
-quantidadeCometas = 1
+# quantidadeCometas = 1
+# def aleatorizar(meteoros, qntd):
+#     for i in range(0,len(meteoros)):
+#         meteoros[i] = 0
+#     for i in range(0 ,qntd):
+#         val = random.randint(0,len(meteoros)-1)
+#         if(meteoros[val] == 0):
+#             meteoros[val] = 1
+#         else:
+#             for j in range(0,len(meteoros)):
+#                 if(meteoros[j] == 0):
+#                     meteoros[j] = 1
+#                     break
+#     return meteoros
+
 def aleatorizar(meteoros, qntd):
-    for i in range(0,len(meteoros)):
-        meteoros[i] = 0
-    for i in range(0 ,qntd):
-        val = random.randint(0,len(meteoros)-1)
-        if(meteoros[val] == 0):
-            meteoros[val] = 1
-        else:
-            for j in range(0,len(meteoros)):
-                if(meteoros[j] == 0):
-                    meteoros[j] = 1
-                    break
+    meteoros = [0] * len(meteoros)
+    qntd_segura = min(qntd, len(meteoros))
+    
+    indices_escolhidos = random.sample(range(len(meteoros)), qntd_segura)
+    
+    for i in indices_escolhidos:
+        meteoros[i] = 1
+        
     return meteoros
+
 
 def checarColisaoNave(meteoro, nave):
     if nave.posicao[0] + nave.tamMax[0] > meteoro.posicao[0] + meteoro.tamMin[0] and nave.posicao[0] + nave.tamMin[0] < meteoro.posicao[0] + meteoro.tamMax[0]:

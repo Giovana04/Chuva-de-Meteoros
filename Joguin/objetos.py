@@ -4,8 +4,9 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 import regras
-class objeto:
+import random
 
+class objeto:
     def __init__(self, x, y ,z, xTamMax, yTamMax, zTamMax, xTamMin, yTamMin, zTamMin):
         self.posicao = [x,y,z]
         self.tamMax = [xTamMax,yTamMax,zTamMax]
@@ -50,23 +51,32 @@ class SistemaSolar:
         self.nave_y = 0.0
         self.nave_roll = 0.0
         self.texturas_carregadas = False
-        self.meteoros = [0,0,0,0,0,0,0,0,0,0]
-        self.meteorosObjetos = []
-        for i in range (0,len(self.meteoros)):
-            # Onde tem aquele -1 perdido no tamMin X
-            if(i < 5):
-                self.meteorosObjetos.append(objeto(-4,0+i*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
-            else:
-                self.meteorosObjetos.append(objeto(4,0+(i-5)*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
-        self.meteoroInicializado = False
-        self.qntd = 1
         
+        self.meteoros = [0] * 10
+        self.meteorosObjetos = []
+        self.meteoroInicializado = False
+        self.qntd = 2 
+        
+        self.timer_spawn = 0
+        self.tempo_espera_max = 40 
+        self.esperando_reset = False
+        
+        tamanho_hitbox = 0.15
+        for i in range(10):
+            if(i < 5):
+                y_random = random.uniform(-1.2, 1.2)
+                self.meteorosObjetos.append(objeto(-4, y_random, 0, tamanho_hitbox, tamanho_hitbox, 0, -tamanho_hitbox, -tamanho_hitbox, 0))
+            else:
+                y_random = random.uniform(-1.2, 1.2)
+                self.meteorosObjetos.append(objeto(4, y_random, 0, tamanho_hitbox, tamanho_hitbox, 0, -tamanho_hitbox, -tamanho_hitbox, 0))
+                
     def verificaInicializado(self):
         if(self.meteoroInicializado):
             return True
         else:
             self.meteoroInicializado = True
             return False
+
     def carregar_textura(self, arquivo):
         try:
             img = Image.open(arquivo)
@@ -82,19 +92,21 @@ class SistemaSolar:
         except:
             print(f"ERRO: Textura {arquivo} nao encontrada.")
             return 0
+
     def inicializarMeteoros(self):
-        while(len(self.meteorosObjetos) > 0 ):
-            self.meteorosObjetos.pop()
-        for i in range (0,len(self.meteoros)):
+        self.meteorosObjetos.clear()
+        tamanho_hitbox = 0.15 
+        
+        for i in range (0, 10):
             if(i < 5):
-                self.meteorosObjetos.append(objeto(-4,0+i*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
+                self.meteorosObjetos.append(objeto(-4, 0+i*0.6, 0, tamanho_hitbox, tamanho_hitbox, 0, -tamanho_hitbox, -tamanho_hitbox, 0))
             else:
-                self.meteorosObjetos.append(objeto(4,0+(i-5)*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
-        self.meteoros = regras.aleatorizar(self.meteoros,self.qntd)
+                self.meteorosObjetos.append(objeto(4, 0+(i-5)*0.6, 0, tamanho_hitbox, tamanho_hitbox, 0, -tamanho_hitbox, -tamanho_hitbox, 0))
+        self.meteoros = regras.aleatorizar(self.meteoros, self.qntd)
         
     def inicializar_texturas(self):
         if self.texturas_carregadas: return
-        arquivos = [p[0] for p in self.PLANETAS] + ["sol.png", "lua.png", "anelSaturno.png", "estrelas.png", "image.png"]    
+        arquivos = [p[0] for p in self.PLANETAS] + ["sol.png", "lua.png", "anelSaturno.png", "estrelas.png", "image.png", "asteroid.jpg"]    
         for f in arquivos:
             if f not in self.texturas: self.texturas[f] = self.carregar_textura(f)
         self.texturas_carregadas = True
@@ -114,13 +126,10 @@ class SistemaSolar:
         glEnable(GL_TEXTURE_2D)
         tex_id = self.texturas.get('estrelas.png', 0)
         glBindTexture(GL_TEXTURE_2D, tex_id)
-        
         glColor3f(1.0, 1.0, 1.0)
-        
         q = gluNewQuadric()
         gluQuadricTexture(q, True)
         gluSphere(q, 150.0, 20, 20)
-        
         glDisable(GL_TEXTURE_2D)
         glEnable(GL_LIGHTING)
         glDepthMask(GL_TRUE)
@@ -132,7 +141,6 @@ class SistemaSolar:
             glRotatef(self.cam_yaw, 0.0, 1.0, 0.0)
             return
 
-        # Camera Focada (Fase)
         idx = self.foco_camera
         p = self.PLANETAS[idx]
         dist = p[2] * self.DIST_SCALE
@@ -141,7 +149,6 @@ class SistemaSolar:
 
         glRotatef(-self.cam_pitch, 1.0, 0.0, 0.0)
         glRotatef(self.cam_yaw, 0.0, 1.0, 0.0) 
-        
         glRotatef(-ang - 90, 0.0, 1.0, 0.0) 
         glTranslatef(-dist, 0.0, 0.0)
         glTranslatef(0.0, -raio - 1.5, 0.0) 
@@ -173,17 +180,14 @@ class SistemaSolar:
             glVertex3f(-LARGURA_GRID, -ALTURA_GRID, z); glVertex3f( LARGURA_GRID, -ALTURA_GRID, z)
             glVertex3f(-LARGURA_GRID,  ALTURA_GRID, z); glVertex3f( LARGURA_GRID,  ALTURA_GRID, z)
         glEnd()
-        for i in range(0,len(self.meteoros)):
-            if(self.meteoros[i] == True):
-                self.desenharAsteroide(i)
+        
+        if not self.esperando_reset:
+            for i in range(0,len(self.meteoros)):
+                if(self.meteoros[i] == 1):
+                    self.desenharAsteroide(i)
+        
         glPushMatrix()
         glTranslatef(self.nave_x, self.nave_y, 0.0)
-        # glColor3f(0.0, 1.0, 1.0) 
-        # glLineWidth(2.0)
-        # glBegin(GL_LINE_LOOP) 
-        # glVertex3f(-0.15, 0.15, 0); glVertex3f(0.15, 0.15, 0)
-        # glVertex3f(0.15, -0.15, 0); glVertex3f(-0.15, -0.15, 0)
-        # glEnd()
         self.desenharNave()
         glPopMatrix()
 
@@ -193,27 +197,17 @@ class SistemaSolar:
 
     def desenhar_cenario(self):
         self.desenhar_hud_nave()
-        
-        # Reseta cor global
         glColor3f(1.0, 1.0, 1.0)
-
         glPushMatrix()
-        
         glPushMatrix()
         glRotate(self.cam_pitch, 1,0,0) 
         glRotate(self.cam_yaw, 0,1,0)
-        
         self.desenhar_ceu() 
-        
         glPopMatrix()
-
         self.aplicar_camera()
-        
         glLightfv(GL_LIGHT0, GL_POSITION, [0.0, 0.0, 0.0, 1.0])
         glLightfv(GL_LIGHT0, GL_DIFFUSE, [1.5, 1.5, 1.5, 1.0])
         glEnable(GL_LIGHTING); glEnable(GL_LIGHT0)
-
-        # SOL
         glPushMatrix()
         glDisable(GL_LIGHTING)
         glColor3f(1.0, 1.0, 1.0) 
@@ -225,17 +219,13 @@ class SistemaSolar:
         glPopMatrix()
         glPushMatrix()
         glPopMatrix()
-        # PLANETAS
         for i, p in enumerate(self.PLANETAS):
             glPushMatrix()
             glRotatef(self.angulos[i], 0.0, 1.0, 0.0)
             glTranslatef(p[2] * self.DIST_SCALE, 0.0, 0.0)
             glRotatef(self.rotacao_planetas[i], 0.0, 1.0, 0.0)
-
             if self.foco_camera == i: glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [0.3, 0.3, 0.3, 1.0])
-
             glColor3f(1.0, 1.0, 1.0) 
-
             if i == 5: # Saturno
                 self.desenhar_esfera(self.texturas.get(p[0], 0), p[1] * self.RAIO_SCALE)
                 glPushMatrix()
@@ -254,55 +244,52 @@ class SistemaSolar:
                 glPopMatrix()
             else:
                 self.desenhar_esfera(self.texturas.get(p[0], 0), p[1] * self.RAIO_SCALE)
-            
             if self.foco_camera == i: glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [0.2, 0.2, 0.2, 1.0])
             glPopMatrix()
-
         glPopMatrix()
     
-    
     def atualizar(self):
-        vel = 0.05
+        vel = 0.01
         for i, p in enumerate(self.PLANETAS):
             self.angulos[i] = (self.angulos[i] + p[3] * self.velocidade_tempo) % 360.0
             self.rotacao_planetas[i] = (self.rotacao_planetas[i] + 1.2 * self.velocidade_tempo) % 360.0
         self.angulo_lua = (self.angulo_lua + 5.0 * self.velocidade_tempo) % 360.0
+        
+        if self.esperando_reset:
+            self.timer_spawn += 1
+            if self.timer_spawn > self.tempo_espera_max:
+                self.esperando_reset = False
+                self.timer_spawn = 0
+                for j in range(len(self.meteorosObjetos)):
+                    if j < 5: self.meteorosObjetos[j].posicao[0] = -4
+                    else:     self.meteorosObjetos[j].posicao[0] = 4
+                self.meteoros = regras.aleatorizar(self.meteoros, self.qntd)
+            return 
+
+        wave_out = True 
         for i in range(0, len(self.meteoros)):
-            if(self.meteoros[i] == True):
+            # trava de segurança para não crashar se as listas desincronizarem
+            if i >= len(self.meteorosObjetos): 
+                continue
+
+            if(self.meteoros[i] == 1):
                 if(i < 5):
                     self.meteorosObjetos[i].posicao[0] += vel
+                    if self.meteorosObjetos[i].posicao[0] < 1.8: wave_out = False
                 else:
                     self.meteorosObjetos[i].posicao[0] -= vel
-                # Troquei e diminui o tamanho
-                self.colisao = regras.checarColisaoNave(self.meteorosObjetos[i], objeto(self.nave_x, self.nave_y, 0, 0.15, 0.15, 0.15, -0.15, -0.15, -0.15))
-                if(i < 5):
-                    if(self.meteorosObjetos[i].posicao[0] >= 1.8):
-                        while(len(self.meteorosObjetos) > 0 ):
-                            self.meteorosObjetos.pop()
-                        for j in range (0,len(self.meteoros)):
-                            # Onde tem aquele -1 perdido no tamMin X
-                            if(j < 5):
-                                self.meteorosObjetos.append(objeto(-4,0+j*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
-                            else:
-                                self.meteorosObjetos.append(objeto(4,0+(j-5)*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
-                        self.meteoros = regras.aleatorizar(self.meteoros, self.qntd)
-                    if(self.colisao):
-                        self.meteoroInicializado = False
-                        break
-                else:
-                    if(self.meteorosObjetos[i].posicao[0] <= -1.8):
-                        while(len(self.meteorosObjetos) > 0 ):
-                            self.meteorosObjetos.pop()
-                        for j in range (0,len(self.meteoros)):
-                            # Onde tem aquele -1 perdido no tamMin X
-                            if(j < 5):
-                                self.meteorosObjetos.append(objeto(-4,0+j*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
-                            else:
-                                self.meteorosObjetos.append(objeto(4,0+(j-5)*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
-                        self.meteoros = regras.aleatorizar(self.meteoros, self.qntd)
-                    if(self.colisao):
-                        self.meteoroInicializado = False
-                        break
+                    if self.meteorosObjetos[i].posicao[0] > -1.8: wave_out = False
+
+                self.colisao = regras.checarColisaoNave(
+                    self.meteorosObjetos[i], 
+                    objeto(self.nave_x, self.nave_y, 0, 0.15, 0.15, 0.15, -0.15, -0.15, -0.15)
+                )
+                if self.colisao:
+                    self.meteoroInicializado = False
+                    break
+        
+        if wave_out and not self.colisao:
+            self.esperando_reset = True
                 
     def getColisao(self):
         return self.colisao
@@ -310,8 +297,10 @@ class SistemaSolar:
     def inverteColisao(self):
         self.colisao = False
         
-    def quantidadeCometas(self, qntd):
-        self.qntd = int(qntd) 
+    def quantidadeCometas(self, fase_str):
+        fase = int(fase_str)
+        self.qntd = min(fase + 1, 9)
+        self.meteoros = regras.aleatorizar(self.meteoros, self.qntd)
         
     def input_nave(self, k):
         vel = 0.2; limit_x = 1.8; limit_y = 1.2
@@ -326,14 +315,19 @@ class SistemaSolar:
         val3 = 0.529
         val4 = 0.487
         val5 = 0.2648
-        glTranslatef(self.meteorosObjetos[i].posicao[0],self.meteorosObjetos[i].posicao[1],self.meteorosObjetos[i].posicao[2])
+        
+        glPushMatrix()
+        glTranslatef(self.meteorosObjetos[i].posicao[0], self.meteorosObjetos[i].posicao[1], self.meteorosObjetos[i].posicao[2])
+        glScalef(0.6, 0.6, 0.6)
         
         glRotatef(90,0,0,1)
         if(i >= 5):
             glRotatef(180,0,0,1)
+
         glPushMatrix()
         glEnable(GL_TEXTURE_2D)
-        glBindTexture(GL_TEXTURE_2D, self.carregar_textura('asteroid.jpg')) 
+        if 'asteroid.jpg' in self.texturas:
+             glBindTexture(GL_TEXTURE_2D, self.texturas['asteroid.jpg'])
         glColor3d(1,0.3,0)
         quad = gluNewQuadric()
         gluQuadricTexture(quad, GL_TRUE)
@@ -341,7 +335,8 @@ class SistemaSolar:
         gluDeleteQuadric(quad)
         glDisable(GL_TEXTURE_2D)
         glPopMatrix()
-        glTranslate(0.05,0.2,0)
+
+        glTranslate(0.0,0.0,0)
         glRotate(-15,0,0,1)
         glBegin(GL_TRIANGLE_FAN)
         glColor3f(1,1,0); glVertex3f( 0.0, val3, 0.0);   
@@ -360,7 +355,6 @@ class SistemaSolar:
         glColor3f(1,0,0); glVertex3f( val1,-val1,-val1);  
         glColor3f(1,0,0); glVertex3f(-val1,-val1,-val1);   
         glColor3f(1,0,0); glVertex3f(-val1,-val1, val1);   
-        
         glEnd()
         glTranslate(-0.05,0,0)
         glRotatef(5,0,0,1)
@@ -372,13 +366,8 @@ class SistemaSolar:
         glColor3f(1,0,0); glVertex3f(-val1,-val1,-val1);   
         glColor3f(1,0,0); glVertex3f(-val1,-val1, val1);   
         glEnd()
-        glRotate(5,0,0,1)
-        glTranslate(0.1,-0.2,0)
-        if(i >= 5):
-            glRotatef(-180,0,0,1)
-        glRotatef(-90,0,0,1)
-       
-        glTranslatef(self.meteorosObjetos[i].posicao[0]*-1, self.meteorosObjetos[i].posicao[1]*-1,self.meteorosObjetos[i].posicao[2]*-1)
+        glPopMatrix()
+
     def desenharNave(self):
         val1 = 0.0833
         val2 = 0.1666
@@ -389,34 +378,26 @@ class SistemaSolar:
       
         glRotate(270,0,1,0)
         glBegin(GL_QUADS)
-        
-    #   //Quad 1
         glColor3f(0.5,0.5,0.5);glVertex3f( val1, val2, val1);  
         glColor3f(0.5,0.5,0.5);glVertex3f( val1,-val1, val1);   
         glColor3f(0.5,0.5,0.5);glVertex3f( val1,-val1,-val1);   
         glColor3f(0.5,0.5,0.5);glVertex3f( val1, val2,-val1);
-        #   //Quad 2
         glColor3f(0.5,0.5,0.5);glVertex3f( val1, val2,-val1);   
         glColor3f(0.5,0.5,0.5);glVertex3f( val1,-val1,-val1);   
         glColor3f(0.5,0.5,0.5); glVertex3f(-val1,-val1,-val1);   
         glColor3f(0.5,0.5,0.5);glVertex3f(-val1, val2,-val1);   
-        
         glVertex3f(-val1, val2,-val1);   
         glVertex3f(-val1,-val1,-val1);   
         glVertex3f(-val1,-val1, val1);  
         glVertex3f(-val1, val2, val1);   
-    #   //Quad 4
         glVertex3f(-val1, val2, val1);   
         glVertex3f(-val1,-val1, val1);   
         glVertex3f( val1,-val1, val1);   
         glVertex3f( val1, val2, val1);   
-    
-    #Quad 5
         glVertex3f(-val1, val2,-val1);   
         glVertex3f(-val1, val2, val1);   
         glVertex3f( val1, val2, val1);   
         glVertex3f( val1, val2,-val1);  
-    #Quad 6
         glVertex3f(-val1,-val1, val1)
         glVertex3f(-val1,-val1,-val1)
         glVertex3f( val1,-val1,-val1)
@@ -424,74 +405,58 @@ class SistemaSolar:
         glEnd()
         glTranslatef(0,0.25,0)
         glBegin(GL_TRIANGLES)
-    #   //Triangle val1       
         glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val1, 0.0);   
         glColor3f(0.3,0.3,0.3); glVertex3f(-val1,-val1, val1);   
         glColor3f(0.3,0.3,0.3); glVertex3f( val1,-val1, val1);   
-    #   //Triangle 2
         glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val1, 0.0);   
         glColor3f(0.3,0.3,0.3); glVertex3f( val1,-val1, val1);   
         glColor3f(0.3,0.3,0.3); glVertex3f( val1,-val1,-val1);   
-    #   //Triangle 3
         glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val1, 0.0);   
         glColor3f(0.3,0.3,0.3); glVertex3f( val1,-val1,-val1);   
         glColor3f(0.3,0.3,0.3); glVertex3f(-val1,-val1,-val1);   
-    #   //Triangle 4
         glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val1, 0.0);   
         glColor3f(0.3,0.3,0.3); glVertex3f(-val1,-val1,-val1);   
         glColor3f(0.3,0.3,0.3); glVertex3f(-val1,-val1, val1);   
         glEnd()
-        
         glTranslatef(0.166,-0.166,0)
-        
         quad = gluNewQuadric()
         gluQuadricTexture(quad, GL_TRUE)
         gluQuadricNormals(quad, GLU_SMOOTH)
         glColor3f(0,0, 0.4)
         gluSphere(quad, val3, 10, 10)
-        
         glTranslatef(-0.166,-0.166,0.05)
         glBegin(GL_TRIANGLES)
-    #   //Triangle 1
         glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val3, 0.0);   
         glColor3f(0.3,0.3,0.3); glVertex3f(-val3,-val3, val3);   
         glColor3f(0.3,0.3,0.3); glVertex3f( val3,-val3, val3);   
-    #   //Triangle 2
         glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val3, 0.0);   
         glColor3f(0.3,0.3,0.3); glVertex3f( val3,-val3, val3);   
         glColor3f(0.3,0.3,0.3); glVertex3f( val3,-val3,-val3);   
-    #   //Triangle 3
         glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val3, 0.0);   
         glColor3f(0.3,0.3,0.3); glVertex3f( val3,-val3,-val3);   
         glColor3f(0.3,0.3,0.3); glVertex3f(-val3,-val3,-val3);   
-    #   //Triangle 4
         glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val3, 0.0);   
         glColor3f(0.3,0.3,0.3); glVertex3f(-val3,-val3,-val3);   
         glColor3f(0.3,0.3,0.3); glVertex3f(-val3,-val3, val3);   
         glEnd();
         glTranslatef(0,0,-0.1)
         glBegin(GL_TRIANGLES)
-    #   //Triangle 1
         glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val3, 0.0);   
         glColor3f(0.3,0.3,0.3); glVertex3f(-val3,-val3, val3);   
         glColor3f(0.3,0.3,0.3); glVertex3f( val3,-val3, val3);   
-    #   //Triangle 2
         glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val3, 0.0);   
         glColor3f(0.3,0.3,0.3); glVertex3f( val3,-val3, val3);   
         glColor3f(0.3,0.3,0.3); glVertex3f( val3,-val3,-val3);   
-    #   //Triangle 3
         glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val3, 0.0);   
         glColor3f(0.3,0.3,0.3); glVertex3f( val3,-val3,-val3);   
         glColor3f(0.3,0.3,0.3); glVertex3f(-val3,-val3,-val3);   
-    #   //Triangle 4
         glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val3, 0.0);   
         glColor3f(0.3,0.3,0.3); glVertex3f(-val3,-val3,-val3);   
         glColor3f(0.3,0.3,0.3); glVertex3f(-val3,-val3, val3);   
         glEnd()
-        
         glTranslatef(-0.1666,-0.0833, 0)
         glRotatef(180,0,0,1)
-        glBegin(GL_TRIANGLE_FAN);
+        glBegin(GL_TRIANGLE_FAN)
         glColor3f(1,1,0); glVertex3f( 0.0, val4, 0.0);   
         glColor3f(1,0,0); glVertex3f(-val6,-val4, val5);  
         glColor3f(1,0,0); glVertex3f( val6,-val4, val5);   

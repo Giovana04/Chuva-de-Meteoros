@@ -195,7 +195,7 @@ def display():
         glRasterPos2f(30, 25)
         for c in planeta: glutBitmapCharacter(FONTE_TITULO, ord(c))
         # Controles (Direita)
-        msg = "ESC: Menu  |  Mova o mouse: Câmera  |  +/- : Velocidade do tempo | Escolher fase: 1 - 8"
+        msg = "ESC: Menu  |  Mova o mouse: Câmera  |  +/- : Velocidade do tempo | Escolher fase: 1 - 6"
         largura = 0
         for c in msg: largura += glutBitmapWidth(FONTE_TEXTO, ord(c))
         
@@ -289,9 +289,11 @@ def teclado(key, x, y):
     if estado_atual == MENU:
         if k == '\r' or k == '\n': 
             estado_atual = JOGO
-            sistema.foco_camera = 0 
+            sistema.foco_camera = 2 
             sistema.nave_x, sistema.nave_y = 0, 0
             sistema.cam_pitch, sistema.cam_yaw = 0, 0
+            sistema.quantidadeCometas("1")
+
         elif k == 'i': estado_atual = REGRAS
         elif k == 'e':
             estado_atual = EXPLORAR
@@ -300,8 +302,8 @@ def teclado(key, x, y):
 
     elif estado_atual == JOGO:
         sistema.input_nave(k)
-        if k in [str(i) for i in range(1, 9)]:
-            idx = int(k) - 1
+        if k in [str(i) for i in range(1, 7)]:
+            idx = int(k) + 1
             sistema.foco_camera = idx
             sistema.nave_x, sistema.nave_y = 0, 0
             sistema.quantidadeCometas(k)
