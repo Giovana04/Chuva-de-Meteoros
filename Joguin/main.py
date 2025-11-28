@@ -304,6 +304,7 @@ def teclado(key, x, y):
             idx = int(k) - 1
             sistema.foco_camera = idx
             sistema.nave_x, sistema.nave_y = 0, 0
+            sistema.quantidadeCometas(k)
 
     glutPostRedisplay()
 

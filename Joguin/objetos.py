@@ -50,11 +50,14 @@ class SistemaSolar:
         self.nave_y = 0.0
         self.nave_roll = 0.0
         self.texturas_carregadas = False
-        self.meteoros = [0,0,0,0,0]
+        self.meteoros = [0,0,0,0,0,0,0,0,0,0]
         self.meteorosObjetos = []
         for i in range (0,len(self.meteoros)):
             # Onde tem aquele -1 perdido no tamMin X
-            self.meteorosObjetos.append(objeto(-4,0+i*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
+            if(i < 5):
+                self.meteorosObjetos.append(objeto(-4,0+i*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
+            else:
+                self.meteorosObjetos.append(objeto(4,0+(i-5)*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
         self.meteoroInicializado = False
         self.qntd = 1
         
@@ -82,8 +85,11 @@ class SistemaSolar:
     def inicializarMeteoros(self):
         while(len(self.meteorosObjetos) > 0 ):
             self.meteorosObjetos.pop()
-        for j in range (0,len(self.meteoros)):
-            self.meteorosObjetos.append(objeto(-4,-1.4+j*0.2,0,0.2648,0.2648,0,-1,-0.2648,0))
+        for i in range (0,len(self.meteoros)):
+            if(i < 5):
+                self.meteorosObjetos.append(objeto(-4,0+i*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
+            else:
+                self.meteorosObjetos.append(objeto(4,0+(i-5)*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
         self.meteoros = regras.aleatorizar(self.meteoros,self.qntd)
         
     def inicializar_texturas(self):
@@ -172,12 +178,13 @@ class SistemaSolar:
                 self.desenharAsteroide(i)
         glPushMatrix()
         glTranslatef(self.nave_x, self.nave_y, 0.0)
-        glColor3f(0.0, 1.0, 1.0) 
-        glLineWidth(2.0)
-        glBegin(GL_LINE_LOOP) 
-        glVertex3f(-0.15, 0.15, 0); glVertex3f(0.15, 0.15, 0)
-        glVertex3f(0.15, -0.15, 0); glVertex3f(-0.15, -0.15, 0)
-        glEnd()
+        # glColor3f(0.0, 1.0, 1.0) 
+        # glLineWidth(2.0)
+        # glBegin(GL_LINE_LOOP) 
+        # glVertex3f(-0.15, 0.15, 0); glVertex3f(0.15, 0.15, 0)
+        # glVertex3f(0.15, -0.15, 0); glVertex3f(-0.15, -0.15, 0)
+        # glEnd()
+        self.desenharNave()
         glPopMatrix()
 
         glDisable(GL_BLEND)
@@ -262,18 +269,40 @@ class SistemaSolar:
         self.angulo_lua = (self.angulo_lua + 5.0 * self.velocidade_tempo) % 360.0
         for i in range(0, len(self.meteoros)):
             if(self.meteoros[i] == True):
-                self.meteorosObjetos[i].posicao[0] += vel
+                if(i < 5):
+                    self.meteorosObjetos[i].posicao[0] += vel
+                else:
+                    self.meteorosObjetos[i].posicao[0] -= vel
                 # Troquei e diminui o tamanho
                 self.colisao = regras.checarColisaoNave(self.meteorosObjetos[i], objeto(self.nave_x, self.nave_y, 0, 0.15, 0.15, 0.15, -0.15, -0.15, -0.15))
-                if(self.meteorosObjetos[i].posicao[0] >= 1.8):
-                    while(len(self.meteorosObjetos) > 0 ):
-                        self.meteorosObjetos.pop()
-                    for j in range (0,len(self.meteoros)):
-                        self.meteorosObjetos.append(objeto(-4,0+j*0.6,0,0.2,0.2,0,-1,-0.2,0))
-                    self.meteoros = regras.aleatorizar(self.meteoros, 2)
-                if(self.colisao):
-                    self.meteoroInicializado = False
-                    break
+                if(i < 5):
+                    if(self.meteorosObjetos[i].posicao[0] >= 1.8):
+                        while(len(self.meteorosObjetos) > 0 ):
+                            self.meteorosObjetos.pop()
+                        for j in range (0,len(self.meteoros)):
+                            # Onde tem aquele -1 perdido no tamMin X
+                            if(j < 5):
+                                self.meteorosObjetos.append(objeto(-4,0+j*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
+                            else:
+                                self.meteorosObjetos.append(objeto(4,0+(j-5)*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
+                        self.meteoros = regras.aleatorizar(self.meteoros, self.qntd)
+                    if(self.colisao):
+                        self.meteoroInicializado = False
+                        break
+                else:
+                    if(self.meteorosObjetos[i].posicao[0] <= -1.8):
+                        while(len(self.meteorosObjetos) > 0 ):
+                            self.meteorosObjetos.pop()
+                        for j in range (0,len(self.meteoros)):
+                            # Onde tem aquele -1 perdido no tamMin X
+                            if(j < 5):
+                                self.meteorosObjetos.append(objeto(-4,0+j*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
+                            else:
+                                self.meteorosObjetos.append(objeto(4,0+(j-5)*0.6,0,0.2648,0.2648,0,-0.2648,-0.2648,0))
+                        self.meteoros = regras.aleatorizar(self.meteoros, self.qntd)
+                    if(self.colisao):
+                        self.meteoroInicializado = False
+                        break
                 
     def getColisao(self):
         return self.colisao
@@ -297,9 +326,11 @@ class SistemaSolar:
         val3 = 0.529
         val4 = 0.487
         val5 = 0.2648
-        # glTranslatef(0,0,-2)
         glTranslatef(self.meteorosObjetos[i].posicao[0],self.meteorosObjetos[i].posicao[1],self.meteorosObjetos[i].posicao[2])
+        
         glRotatef(90,0,0,1)
+        if(i >= 5):
+            glRotatef(180,0,0,1)
         glPushMatrix()
         glEnable(GL_TEXTURE_2D)
         glBindTexture(GL_TEXTURE_2D, self.carregar_textura('asteroid.jpg')) 
@@ -343,5 +374,141 @@ class SistemaSolar:
         glEnd()
         glRotate(5,0,0,1)
         glTranslate(0.1,-0.2,0)
+        if(i >= 5):
+            glRotatef(-180,0,0,1)
         glRotatef(-90,0,0,1)
+       
         glTranslatef(self.meteorosObjetos[i].posicao[0]*-1, self.meteorosObjetos[i].posicao[1]*-1,self.meteorosObjetos[i].posicao[2]*-1)
+    def desenharNave(self):
+        val1 = 0.0833
+        val2 = 0.1666
+        val3 = 0.0416
+        val4 = 0.0333
+        val5 = 0.0166
+        val6 = 0.025
+      
+        glRotate(270,0,1,0)
+        glBegin(GL_QUADS)
+        
+    #   //Quad 1
+        glColor3f(0.5,0.5,0.5);glVertex3f( val1, val2, val1);  
+        glColor3f(0.5,0.5,0.5);glVertex3f( val1,-val1, val1);   
+        glColor3f(0.5,0.5,0.5);glVertex3f( val1,-val1,-val1);   
+        glColor3f(0.5,0.5,0.5);glVertex3f( val1, val2,-val1);
+        #   //Quad 2
+        glColor3f(0.5,0.5,0.5);glVertex3f( val1, val2,-val1);   
+        glColor3f(0.5,0.5,0.5);glVertex3f( val1,-val1,-val1);   
+        glColor3f(0.5,0.5,0.5); glVertex3f(-val1,-val1,-val1);   
+        glColor3f(0.5,0.5,0.5);glVertex3f(-val1, val2,-val1);   
+        
+        glVertex3f(-val1, val2,-val1);   
+        glVertex3f(-val1,-val1,-val1);   
+        glVertex3f(-val1,-val1, val1);  
+        glVertex3f(-val1, val2, val1);   
+    #   //Quad 4
+        glVertex3f(-val1, val2, val1);   
+        glVertex3f(-val1,-val1, val1);   
+        glVertex3f( val1,-val1, val1);   
+        glVertex3f( val1, val2, val1);   
+    
+    #Quad 5
+        glVertex3f(-val1, val2,-val1);   
+        glVertex3f(-val1, val2, val1);   
+        glVertex3f( val1, val2, val1);   
+        glVertex3f( val1, val2,-val1);  
+    #Quad 6
+        glVertex3f(-val1,-val1, val1)
+        glVertex3f(-val1,-val1,-val1)
+        glVertex3f( val1,-val1,-val1)
+        glVertex3f( val1,-val1, val1)
+        glEnd()
+        glTranslatef(0,0.25,0)
+        glBegin(GL_TRIANGLES)
+    #   //Triangle val1       
+        glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val1, 0.0);   
+        glColor3f(0.3,0.3,0.3); glVertex3f(-val1,-val1, val1);   
+        glColor3f(0.3,0.3,0.3); glVertex3f( val1,-val1, val1);   
+    #   //Triangle 2
+        glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val1, 0.0);   
+        glColor3f(0.3,0.3,0.3); glVertex3f( val1,-val1, val1);   
+        glColor3f(0.3,0.3,0.3); glVertex3f( val1,-val1,-val1);   
+    #   //Triangle 3
+        glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val1, 0.0);   
+        glColor3f(0.3,0.3,0.3); glVertex3f( val1,-val1,-val1);   
+        glColor3f(0.3,0.3,0.3); glVertex3f(-val1,-val1,-val1);   
+    #   //Triangle 4
+        glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val1, 0.0);   
+        glColor3f(0.3,0.3,0.3); glVertex3f(-val1,-val1,-val1);   
+        glColor3f(0.3,0.3,0.3); glVertex3f(-val1,-val1, val1);   
+        glEnd()
+        
+        glTranslatef(0.166,-0.166,0)
+        
+        quad = gluNewQuadric()
+        gluQuadricTexture(quad, GL_TRUE)
+        gluQuadricNormals(quad, GLU_SMOOTH)
+        glColor3f(0,0, 0.4)
+        gluSphere(quad, val3, 10, 10)
+        
+        glTranslatef(-0.166,-0.166,0.05)
+        glBegin(GL_TRIANGLES)
+    #   //Triangle 1
+        glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val3, 0.0);   
+        glColor3f(0.3,0.3,0.3); glVertex3f(-val3,-val3, val3);   
+        glColor3f(0.3,0.3,0.3); glVertex3f( val3,-val3, val3);   
+    #   //Triangle 2
+        glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val3, 0.0);   
+        glColor3f(0.3,0.3,0.3); glVertex3f( val3,-val3, val3);   
+        glColor3f(0.3,0.3,0.3); glVertex3f( val3,-val3,-val3);   
+    #   //Triangle 3
+        glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val3, 0.0);   
+        glColor3f(0.3,0.3,0.3); glVertex3f( val3,-val3,-val3);   
+        glColor3f(0.3,0.3,0.3); glVertex3f(-val3,-val3,-val3);   
+    #   //Triangle 4
+        glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val3, 0.0);   
+        glColor3f(0.3,0.3,0.3); glVertex3f(-val3,-val3,-val3);   
+        glColor3f(0.3,0.3,0.3); glVertex3f(-val3,-val3, val3);   
+        glEnd();
+        glTranslatef(0,0,-0.1)
+        glBegin(GL_TRIANGLES)
+    #   //Triangle 1
+        glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val3, 0.0);   
+        glColor3f(0.3,0.3,0.3); glVertex3f(-val3,-val3, val3);   
+        glColor3f(0.3,0.3,0.3); glVertex3f( val3,-val3, val3);   
+    #   //Triangle 2
+        glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val3, 0.0);   
+        glColor3f(0.3,0.3,0.3); glVertex3f( val3,-val3, val3);   
+        glColor3f(0.3,0.3,0.3); glVertex3f( val3,-val3,-val3);   
+    #   //Triangle 3
+        glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val3, 0.0);   
+        glColor3f(0.3,0.3,0.3); glVertex3f( val3,-val3,-val3);   
+        glColor3f(0.3,0.3,0.3); glVertex3f(-val3,-val3,-val3);   
+    #   //Triangle 4
+        glColor3f(0.3,0.3,0.3); glVertex3f( 0.0, val3, 0.0);   
+        glColor3f(0.3,0.3,0.3); glVertex3f(-val3,-val3,-val3);   
+        glColor3f(0.3,0.3,0.3); glVertex3f(-val3,-val3, val3);   
+        glEnd()
+        
+        glTranslatef(-0.1666,-0.0833, 0)
+        glRotatef(180,0,0,1)
+        glBegin(GL_TRIANGLE_FAN);
+        glColor3f(1,1,0); glVertex3f( 0.0, val4, 0.0);   
+        glColor3f(1,0,0); glVertex3f(-val6,-val4, val5);  
+        glColor3f(1,0,0); glVertex3f( val6,-val4, val5);   
+        glColor3f(1,0,0); glVertex3f( val6,-val4,-val5);  
+        glColor3f(1,0,0); glVertex3f(-val6,-val4,-val5);   
+        glColor3f(1,0,0); glVertex3f(-val6,-val4, val5);   
+        glEnd()
+        glRotate(-180,0,0,1)
+        glTranslatef(0,0,0.1)
+        glRotate(180,0,0,1) 
+        glBegin(GL_TRIANGLE_FAN);
+        glColor3f(1,1,0); glVertex3f( 0.0, val4, 0.0);   
+        glColor3f(1,0,0); glVertex3f(-val6,-val4, val5);  
+        glColor3f(1,0,0); glVertex3f( val6,-val4, val5);   
+        glColor3f(1,0,0); glVertex3f( val6,-val4,-val5);  
+        glColor3f(1,0,0); glVertex3f(-val6,-val4,-val5);   
+        glColor3f(1,0,0); glVertex3f(-val6,-val4, val5); 
+        glEnd()
+        glTranslate(-0,-0.2,-0.05)
+        glRotate(-270,0,1,0)
