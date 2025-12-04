@@ -1,10 +1,8 @@
-# main.py
 import sys
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from objetos import *
-# from regras import *
 
 MENU = 0
 REGRAS = 1
@@ -21,7 +19,7 @@ ALTURA = 800
 mouse_down = False
 last_x, last_y = 0, 0
 
-def desenhar_texto(x, y, texto, tamanho=GLUT_BITMAP_HELVETICA_18):
+def desenhar_texto(x, y, texto, tamanho=GLUT_BITMAP_HELVETICA_18): 
     glDisable(GL_LIGHTING)
     glDisable(GL_DEPTH_TEST) 
     glDisable(GL_TEXTURE_2D)
@@ -57,11 +55,11 @@ def desenhar_texto_centralizado(y, texto, fonte, cor):
     x = (LARGURA - largura_texto) / 2
     
     glColor3f(*cor)
-    glRasterPos2f(x, y)
+    glRasterPos2f(x, y) # posição inicial do texto
     for char in texto:
         glutBitmapCharacter(fonte, ord(char))
 
-def desenhar_linha(y, espessura=1.0):
+def desenhar_linha(y, espessura=1.0): 
     glLineWidth(espessura)
     glColor3f(0.0, 1.0, 1.0)
     glBegin(GL_LINES)
@@ -69,7 +67,7 @@ def desenhar_linha(y, espessura=1.0):
     glVertex2f(LARGURA/2 + 200, y)
     glEnd()
 
-def desenhar_caixa(): # apanhei nessa ta kkkkkkk
+def desenhar_caixa():
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
     
@@ -85,7 +83,6 @@ def desenhar_caixa(): # apanhei nessa ta kkkkkkk
     glVertex2f(0, 80); glVertex2f(LARGURA, 80)
     glEnd()
     glDisable(GL_BLEND)
-
 
 def display():
     global estado_atual
@@ -104,11 +101,11 @@ def display():
     # Pra ficar mais escuro o fundo no menu e regras
     if estado_atual == MENU or estado_atual == REGRAS:
         glDisable(GL_LIGHTING); glDisable(GL_DEPTH_TEST); glDisable(GL_TEXTURE_2D)
-        glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
         
         glBegin(GL_QUADS)
         glColor4f(0.05, 0.05, 0.1, 0.95) 
-        glVertex2f(0, 0); glVertex2f(LARGURA, 0)
+        glVertex2f(0, 0); glVertex2f(LARGURA, 0) 
         glColor4f(0.0, 0.0, 0.0, 0.85)
         glVertex2f(LARGURA, ALTURA); glVertex2f(0, ALTURA)
         glEnd()
@@ -119,13 +116,13 @@ def display():
     FONTE_TEXTO = GLUT_BITMAP_HELVETICA_18
 
     if estado_atual == MENU:
-        desenhar_texto_centralizado(ALTURA/2 + 80, "Joguin", FONTE_TITULO, (0.0, 1.0, 1.0)) # Ciano
+        desenhar_texto_centralizado(ALTURA/2 + 80, "Joguin", FONTE_TITULO, (0.0, 1.0, 1.0)) 
         desenhar_texto_centralizado(ALTURA/2 + 50, "Feito por: Ana Beatriz B. S. Henrique e Giovana F. Nascimento", FONTE_TEXTO, (0.7, 0.7, 0.7)) # Cinza
         
         desenhar_linha(ALTURA/2 + 30)
         
         y_base = ALTURA/2 - 20
-        desenhar_texto_centralizado(y_base, "ENTER", FONTE_TEXTO, (1.0, 1.0, 0.0)) # Amarelo
+        desenhar_texto_centralizado(y_base, "ENTER", FONTE_TEXTO, (1.0, 1.0, 0.0))
         desenhar_texto_centralizado(y_base - 25, "Jogo", FONTE_TEXTO, (1.0, 1.0, 1.0))
         
         desenhar_texto_centralizado(y_base - 70, "i", FONTE_TEXTO, (1.0, 1.0, 0.0))
@@ -137,7 +134,7 @@ def display():
     elif estado_atual == REGRAS:
         y_cursor = ALTURA - 100 
         
-        desenhar_texto_centralizado(y_cursor, "Controles", FONTE_TITULO, (1.0, 0.5, 0.0)) # Laranja
+        desenhar_texto_centralizado(y_cursor, "Controles", FONTE_TITULO, (1.0, 0.5, 0.0))
         desenhar_linha(y_cursor - 20)
         
         margem_esq = LARGURA/2 - 300 
@@ -167,8 +164,8 @@ def display():
         y_cursor -= 60 
         
         textos_regras = [
-            "- Desvie dos meteoros! Se for atingido, voltará a primeira fase.",
-            "- Termine 3 voltas no planeta para passar de fase."
+            "- Desvie dos meteoros! Se for atingido, voltará ao menu.",
+            "- Mude de fase quando quiser, para qualquer uma entre as 6 existentes, selecionando um número de 1-6."
         ]
         glColor3f(0.9, 0.9, 0.9) 
         
@@ -184,17 +181,10 @@ def display():
         desenhar_caixa()
         if(not sistema.verificaInicializado()):
             sistema.inicializarMeteoros()
-       
-        # Info do Planeta (Esquerda)
-        planeta = sistema.PLANETAS[sistema.foco_camera][0].replace('.jpg','').replace('.png','').upper()
-        glColor3f(0.0, 1.0, 1.0) # Título Ciano
-        glRasterPos2f(30, 50)
-        for c in "Planeta atual:": glutBitmapCharacter(FONTE_TEXTO, ord(c))
+    
         
-        glColor3f(1.0, 1.0, 1.0) # Nome Branco
+        glColor3f(1.0, 1.0, 1.0)
         glRasterPos2f(30, 25)
-        for c in planeta: glutBitmapCharacter(FONTE_TITULO, ord(c))
-        # Controles (Direita)
         msg = "ESC: Menu  |  Mova o mouse: Câmera  |  +/- : Velocidade do tempo | Escolher fase: 1 - 6"
         largura = 0
         for c in msg: largura += glutBitmapWidth(FONTE_TEXTO, ord(c))
@@ -204,7 +194,6 @@ def display():
         for c in msg: glutBitmapCharacter(FONTE_TEXTO, ord(c))
         
         if(sistema.getColisao()):
-            print("AQUI???????????????")
             estado_atual = MENU
             sistema.foco_camera = None 
             sistema.zoom = -60
@@ -215,7 +204,7 @@ def display():
     elif estado_atual == EXPLORAR:
         desenhar_caixa()
         
-        glColor3f(0.0, 1.0, 0.0) # Verde Matrix
+        glColor3f(0.0, 1.0, 0.0) 
         glRasterPos2f(30, 40)
         for c in "MODO LIVRE": glutBitmapCharacter(FONTE_TITULO, ord(c))
         
@@ -231,11 +220,11 @@ def display():
 
     glutSwapBuffers()
 
-def idle():
+def idle(): # fica atualizando a tela
     sistema.atualizar() 
     glutPostRedisplay()
 
-def reshape(w, h):
+def reshape(w, h): # é para redimencionar a janela
     global LARGURA, ALTURA
     LARGURA, ALTURA = w, h or 1
     glViewport(0, 0, w, h or 1)
@@ -245,8 +234,8 @@ def reshape(w, h):
     glMatrixMode(GL_MODELVIEW)
 
 def main():
-    glutInit(sys.argv)
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH)
+    glutInit(sys.argv) 
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH) # duplo buffer é para animação suave, rgba é para cores, depth é para profundidade 3D
     glutInitWindowSize(LARGURA, ALTURA)
     glutCreateWindow(b"Joguin")
     glEnable(GL_DEPTH_TEST)
@@ -263,9 +252,7 @@ def main():
     glutMotionFunc(mouse_move)
     glutPassiveMotionFunc(mouse_passivo)
     
-    glutMainLoop()
-    
-    
+    glutMainLoop()  
 
 def teclado(key, x, y):
     global estado_atual
@@ -303,7 +290,7 @@ def teclado(key, x, y):
     elif estado_atual == JOGO:
         sistema.input_nave(k)
         if k in [str(i) for i in range(1, 7)]:
-            idx = int(k) + 1
+            idx = int(k)
             sistema.foco_camera = idx
             sistema.nave_x, sistema.nave_y = 0, 0
             sistema.quantidadeCometas(k)
@@ -320,7 +307,7 @@ def mouse_click(btn, state, x, y):
         elif btn == 4: sistema.zoom -= 2
         glutPostRedisplay()
 
-def mouse_move(x, y): #esse precisa clicar pra mover (pra explorar)
+def mouse_move(x, y): # Esse precisa clicar pra mover (pra explorar)
     global last_x, last_y
     if estado_atual == EXPLORAR and mouse_down:
         dx = x - last_x
@@ -330,14 +317,14 @@ def mouse_move(x, y): #esse precisa clicar pra mover (pra explorar)
         last_x, last_y = x, y
         glutPostRedisplay()
 
-def mouse_passivo(x, y): # não sei se essa é a palavra mas move o mouse sem precisar clicar kkkkkk
+def mouse_passivo(x, y):
     global last_x, last_y
     if estado_atual == JOGO:
         dx = x - last_x
         dy = y - last_y
         
-        if abs(dx) < 50 and abs(dy) < 50:
-            sistema.cam_yaw += dx * 0.2
+        if abs(dx) < 50 and abs(dy) < 50: # evita teletransportar
+            sistema.cam_yaw += dx * 0.2 
             sistema.cam_pitch -= dy * 0.2
             
         glutPostRedisplay()

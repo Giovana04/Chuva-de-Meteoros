@@ -99,14 +99,14 @@ class SistemaSolar:
         
         for i in range (0, 10):
             if(i < 5):
-                self.meteorosObjetos.append(objeto(-4, 0+i*0.6, 0, tamanho_hitbox, tamanho_hitbox, 0, -tamanho_hitbox, -tamanho_hitbox, 0))
+                self.meteorosObjetos.append(objeto(-4, -0.5+i*0.6, 0, tamanho_hitbox, tamanho_hitbox, 0, -tamanho_hitbox, -tamanho_hitbox, 0))
             else:
-                self.meteorosObjetos.append(objeto(4, 0+(i-5)*0.6, 0, tamanho_hitbox, tamanho_hitbox, 0, -tamanho_hitbox, -tamanho_hitbox, 0))
+                self.meteorosObjetos.append(objeto(4, -0.5+(i-5)*0.6, 0, tamanho_hitbox, tamanho_hitbox, 0, -tamanho_hitbox, -tamanho_hitbox, 0))
         self.meteoros = regras.aleatorizar(self.meteoros, self.qntd)
         
     def inicializar_texturas(self):
         if self.texturas_carregadas: return
-        arquivos = [p[0] for p in self.PLANETAS] + ["sol.png", "lua.png", "anelSaturno.png", "estrelas.png", "image.png", "asteroid.jpg"]    
+        arquivos = [p[0] for p in self.PLANETAS] + ["sol.png", "lua.png", "anelSaturno.png", "estrelas.png", "asteroid.jpg"]    
         for f in arquivos:
             if f not in self.texturas: self.texturas[f] = self.carregar_textura(f)
         self.texturas_carregadas = True
@@ -120,7 +120,7 @@ class SistemaSolar:
         gluSphere(quad, raio, 32, 32)
         glDisable(GL_TEXTURE_2D)
 
-    def desenhar_ceu(self):
+    def desenhar_ceu(self): 
         glDisable(GL_LIGHTING)
         glDepthMask(GL_FALSE)
         glEnable(GL_TEXTURE_2D)
@@ -134,8 +134,8 @@ class SistemaSolar:
         glEnable(GL_LIGHTING)
         glDepthMask(GL_TRUE)
 
-    def aplicar_camera(self):
-        if self.foco_camera is None:
+    def aplicar_camera(self): 
+        if self.foco_camera is None: 
             glTranslatef(0.0, 0.0, self.zoom)
             glRotatef(self.cam_pitch + 20, 1.0, 0.0, 0.0)
             glRotatef(self.cam_yaw, 0.0, 1.0, 0.0)
@@ -147,11 +147,22 @@ class SistemaSolar:
         ang = self.angulos[idx]
         raio = p[1] * self.RAIO_SCALE
 
+        # aplica rotações da câmera (pitch/yaw)
         glRotatef(-self.cam_pitch, 1.0, 0.0, 0.0)
-        glRotatef(self.cam_yaw, 0.0, 1.0, 0.0) 
-        glRotatef(-ang - 90, 0.0, 1.0, 0.0) 
+        glRotatef(self.cam_yaw, 0.0, 1.0, 0.0)
+
+        # gira o sistema para alinhar com a órbita do planeta escolhido
+        glRotatef(-ang - 90, 0.0, 1.0, 0.0)
+
+        # move a cena para posicionar a câmera sobre o planeta
         glTranslatef(-dist, 0.0, 0.0)
-        glTranslatef(0.0, -raio - 1.5, 0.0) 
+        glTranslatef(0.0, -raio - 1.5, 0.0)
+
+        if self.foco_camera is None:
+            glTranslatef(0.0, 0.0, self.zoom)
+        else:
+        # Um pequeno ajuste fixo pra não entrar dentro da textura do chão
+            glTranslatef(0.0, 0.0, -2.0)
 
     def desenhar_hud_nave(self):
         if self.foco_camera is None: return
@@ -175,7 +186,7 @@ class SistemaSolar:
         for i in range(-3, 4): 
             glVertex3f(i, -ALTURA_GRID, -10.0); glVertex3f(i, -ALTURA_GRID,  2.0)
             glVertex3f(i,  ALTURA_GRID, -10.0); glVertex3f(i,  ALTURA_GRID,  2.0)
-        for k in range(10):
+        for k in range(10): # linha horizontal
             z = -k + offset_z
             glVertex3f(-LARGURA_GRID, -ALTURA_GRID, z); glVertex3f( LARGURA_GRID, -ALTURA_GRID, z)
             glVertex3f(-LARGURA_GRID,  ALTURA_GRID, z); glVertex3f( LARGURA_GRID,  ALTURA_GRID, z)
@@ -211,14 +222,16 @@ class SistemaSolar:
         glPushMatrix()
         glDisable(GL_LIGHTING)
         glColor3f(1.0, 1.0, 1.0) 
+        
         if self.texturas.get('sol.png'):
             glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, self.texturas['sol.png'])
-            q = gluNewQuadric(); gluQuadricTexture(q, True); gluSphere(q, 3.8, 32, 32)
+            q = gluNewQuadric(); gluQuadricTexture(q, True); gluSphere(q, 3.8, 32, 32) 
             glDisable(GL_TEXTURE_2D)
         glEnable(GL_LIGHTING)
         glPopMatrix()
         glPushMatrix()
         glPopMatrix()
+        
         for i, p in enumerate(self.PLANETAS):
             glPushMatrix()
             glRotatef(self.angulos[i], 0.0, 1.0, 0.0)
@@ -232,7 +245,7 @@ class SistemaSolar:
                 glRotatef(80, 1,0,0); glDisable(GL_LIGHTING); glEnable(GL_TEXTURE_2D)
                 glColor3f(1,1,1)
                 if 'anelSaturno.png' in self.texturas: glBindTexture(GL_TEXTURE_2D, self.texturas['anelSaturno.png'])
-                d = gluNewQuadric(); gluQuadricTexture(d, True); gluDisk(d, p[1]*self.RAIO_SCALE*1.2, p[1]*self.RAIO_SCALE*2.2, 64, 1)
+                d = gluNewQuadric(); gluQuadricTexture(d, True); gluDisk(d, p[1]*self.RAIO_SCALE*1.2, p[1]*self.RAIO_SCALE*2.2, 64, 1) # 
                 glDisable(GL_TEXTURE_2D); glEnable(GL_LIGHTING)
                 glPopMatrix()
             elif i == 2: # Terra
@@ -266,9 +279,9 @@ class SistemaSolar:
                 self.meteoros = regras.aleatorizar(self.meteoros, self.qntd)
             return 
 
-        wave_out = True 
+        wave_out = True  # verifica se todos os meteoros saíram da tela
         for i in range(0, len(self.meteoros)):
-            # trava de segurança para não crashar se as listas desincronizarem
+            # trava de segurança para não crashar se as listas desincronizarem 
             if i >= len(self.meteorosObjetos): 
                 continue
 
